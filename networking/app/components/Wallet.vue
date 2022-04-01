@@ -1,22 +1,23 @@
 <template>
-  <Page class='main-page'>
-    <ActionBar title="Weight">
+  <Page @loaded="loaded">
+    <ActionBar title="Wallet">
       <StackLayout orientation="horizontal">
         <Button class="back" text="Назад" @tap="$navigateBack()" />
       </StackLayout>
     </ActionBar>
     <FlexboxLayout width="100%" flexDirection="column" justifyContent="space-between" class="calculator">
+      <Label class="currency"  :text='currency'/>
       <FlexboxLayout>
       <Label class="dropdown"  
       :text="valFrom"
       @tap="$showModal(DropDown, { fullscreen: false, props: {items: Object.keys(items)}}).then(data => {valFrom = data})"/>
       <Label dock="top" class="display" :text="notzero"/>
-      </FlexboxLayout>
-
-      <FlexboxLayout>
+    </FlexboxLayout>
+    
+    <FlexboxLayout>
       <Label class="dropdown"
         :text="valTo"
-        @tap="$showModal(DropDown, { fullscreen: false, props: {items: Object.keys(items)}}).then(data => {valTo = data})" />      
+        @tap="$showModal(DropDown, { fullscreen: false, props: {items: Object.keys(items)}}).then(data => {valTo = data})" />
       <Label dock="top" class="display" :text="converted"/>
       </FlexboxLayout>
       
@@ -35,14 +36,14 @@
           <Button text="5" @tap="append('5')" class="btn btn_num"/>
           <Button text="6" @tap="append('6')" class="btn btn_num"/>
         </FlexboxLayout> 
-        <FlexboxLayout class="layer" justifyContent="space-around">
+        <FlexboxLayout class="layer" justifyContent="space-around"> 
           <Button text="1" @tap="append('1')" class="btn btn_num"/>
           <Button text="2" @tap="append('2')" class="btn btn_num"/>
           <Button text="3" @tap="append('3')" class="btn btn_num"/>
         </FlexboxLayout> 
-        <FlexboxLayout class="layer" justifyContent="space-around">
+        <FlexboxLayout class="layer">
           <Button width="50%" text="0" @tap="append('0')" class="btn big btn_num"/>
-          <Button width="50%" text="." @tap="dot" class="btn big btn_num"/>
+          <Button width="50%" text="." @tap="dot" class="big btn btn_num"/>
         </FlexboxLayout> 
 
       </FlexboxLayout>
@@ -54,6 +55,7 @@
 <script lang="ts">
   import Vue from "nativescript-vue";
   import DropDown from './Dropdown.vue';
+  import {Http} from '@nativescript/core';
 
   export default Vue.extend({
     data() {
@@ -65,15 +67,15 @@
         operator: (a: number, b: number)=>{return 0;},
         operatorClicked: false,
         operationname: '',
-        valFrom: 'Килограммы',
-        valTo: 'Граммы',
+        valFrom: 'Рубль',
+        valTo: 'Доллар',
         items: {
-          'Килограммы': [1000, 1/1000],
-          'Граммы': [1, 1], 
-          'Фунты': [453.59, 1/453.59],
-          'Тонны': [100000, 1/1000000],
+          'Доллар': [1, 1],
+          'Рубль': [1/100, 100], 
+          'Евро': [1/1.1, 1.1],
         },
         selectedIndex: 1,
+        currency: `Текущий курс: USD:100 EUR:110`,
 
       }
       return store;
@@ -89,8 +91,7 @@
       converted() {
         let valFrom = this.$data.items[this.$data.valFrom];
         let valTo = this.$data.items[this.$data.valTo];
-        console.log(valFrom, valTo);
-        return valFrom[0]*Number(this.$data.current)*valTo[1];
+        return Math.round(valFrom[0]*Number(this.$data.current)*valTo[1]*100) / 100;
 
       },
       
@@ -121,10 +122,24 @@
         this.append('.');
       }
     },
-    }
+    loaded() {
+        console.log('load');
+        Http.getJSON("http://api.currencylayer.com/live?access_key=95601bda3a90eafba25fa5f67e9f2e16").then((res: any) => {
+          const rub = res.quotes.USDRUB;
+          const eur = res.quotes.USDEUR;
+          this.$data.items['Рубль'] = [1/rub, rub];
+          this.$data.items['Евро'] = [1/eur, eur];
+          this.$data.currency = `Текущий курс: USD:${Math.round(rub*10)/10} EUR:${Math.round(rub*(1/eur)*10)/10}`
+        }).catch(e => console.log(e))
+      },
+    }, 
   });
 </script>
 
 <style scoped lang="scss">
+
+.currency {
+  font-size: 20; 
+}
 
 </style>
