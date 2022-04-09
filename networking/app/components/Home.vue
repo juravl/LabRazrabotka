@@ -9,7 +9,7 @@
     <StackLayout   flexWrap="wrap">
       <Button class="base-btn" text="Погода" @tap="$navigateTo(weather)" />
       <Button class="base-btn" text="Курсы валют" @tap="$navigateTo(wallet)" />
-      <Button class="base-btn" text="Рассписание" @tap="$navigateTo(timetable)" />
+      <Button class="base-btn" text="Расписание" @tap="$navigateTo(timetable)" />
     </StackLayout  >
   </Page>
 </template>

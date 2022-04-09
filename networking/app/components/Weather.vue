@@ -53,7 +53,7 @@
           this.$data.pressure = Math.round(res.main.pressure * 0.75);
           this.$data.humidity = res.main.humidity;
           this.$data.wind = res.wind;
-          // res.clouds.all = 50;
+          res.clouds.all = 50;
           if (res.clouds.all < 30) {
             this.$data.sky = 'sun'
           } else if (res.clouds.all < 60) {
